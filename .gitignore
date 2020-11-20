@@ -1,0 +1,10 @@
+
+datasets/NPTEL MOOC Dataset/k100_a0.01/
+
+.vscode/
+
+siamese network/siamese_summary/test/
+
+siamese network/siamese_summary/train/
+
+siamese network/data_processing/__pycache__/
