@@ -4,6 +4,8 @@ import subprocess
 import os
 import csv
 import pickle
+from functools import reduce
+
 def create_bow(course_text, vocab=[]):
 	print("Creating the bag of words...\n")
 	vectorizer = CountVectorizer(analyzer = "word",   \
@@ -20,7 +22,7 @@ def create_bow(course_text, vocab=[]):
 	# strings.
 	train_data_features = vectorizer.fit_transform(course_text)
 	train_data_features = train_data_features.toarray()
-	write_unicode_file(reduce(lambda x ,y: x+y+unicode('\n'), vectorizer.get_feature_names(), unicode('')), 'vocab.txt')
+	write_unicode_file(reduce(lambda x ,y: x+y+('\n'), vectorizer.get_feature_names(), ('')), 'vocab.txt')
 	return train_data_features
 
 
@@ -33,7 +35,7 @@ def write_bow(data):
 
 def write_links(file, path, id_dict):
 	of = open(path,'w')
-	with open(file, 'rb') as f:
+	with open(file, 'r') as f:
 		reader = csv.reader(f, delimiter=',', quoting=csv.QUOTE_ALL)
 		for row in reader:
 			a = row[0]
@@ -46,7 +48,7 @@ def write_links(file, path, id_dict):
 	
 def write_unicode_file(d, p):
 	f = io.open(p, 'w', encoding='utf-8')
-	f.write(unicode(d))
+	f.write(d)
 	f.close()
 
 def write_file(d, p):
@@ -58,21 +60,22 @@ def process_vocab(l):
 	v = []
 	for e in l:
 		x = e.split('(')[0]
-	x = x.replace('_',' ').lower()
-	v.append(x)
+		x = x.replace('_',' ').lower()
+		v.append(x)
 	return v
 
 all_text = []
 id_dict = {}
 index = 1
-with open('cs_courses.csv', 'rb') as f:
+with open('cs_courses.csv', 'r') as f:
 	reader = csv.reader(f, delimiter=',', quoting=csv.QUOTE_ALL)
 	for row in reader:	
 		id_dict[row[0]] = index
 		index = index + 1
 		text = row[1]
 		all_text.append(text)
-vocab = process_vocab(pickle.load(open('concept_vocab.pkl')).values())
+
+vocab = process_vocab(pickle.load(open('concept_vocab.pkl', "rb")).values())
 train_data_features = create_bow(all_text, vocab)
 write_bow(train_data_features)
 write_file(id_dict, 'id_map.txt')

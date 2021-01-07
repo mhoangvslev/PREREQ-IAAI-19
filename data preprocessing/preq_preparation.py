@@ -1,12 +1,16 @@
 import csv
-import cPickle
+import pickle
+import nltk
+nltk.download("stopwords")
+
 from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 st = LancasterStemmer() #this is a really bad stemmer
 
 def lemmatize(text):
-	text = unicode(text, errors='replace').strip().lower()
-	t = ' '.join([st.stem(word) for word in text.split() if word not in (stopwords.words('english'))])
+	txt = str(text, 'utf-8') if isinstance(text, bytes) else str(text)
+	txt = txt.strip().lower()
+	t = ' '.join([st.stem(word) for word in txt.split() if word not in (stopwords.words('english'))])
 	return t
 
 def strip_w(w):
@@ -17,6 +21,7 @@ def strip_w(w):
 
 def get_ind(w):
 	w1 = w.split('(')[0].lower().replace('_',' ').replace('-',' ').replace('/',' ')
+	#w1 = w.lower()
 	if vocab_dict_ori.get(w1) is not None:
 		map_dict[w] = w1
 		return vocab_dict_ori.get(w1)
@@ -29,8 +34,9 @@ vocab_dict = {}
 vocab_dict_ori = {}
 vocab_dic = {}
 i = 0
-with open('vocab.txt', 'r') as f:
+with open('vocab.txt', 'rb') as f:
 	for w in f:
+		w = str(w, 'utf-8')
 		vocab_dict_ori[w.strip().lower()] = i
 		ww = lemmatize(w)
 		# print ww
@@ -41,7 +47,7 @@ with open('vocab.txt', 'r') as f:
 concept_vocab = {}
 of = open('cs_preqs_index.txt', 'w')
 map_dict = {}
-with open('cs_preqs.csv', 'rb') as f:
+with open('cs_preqs.csv', 'r') as f:
 	reader = csv.reader(f, delimiter=',', quoting=csv.QUOTE_ALL)
 	for row in reader:
 		i1 = get_ind(row[0])
@@ -52,10 +58,12 @@ with open('cs_preqs.csv', 'rb') as f:
 			concept_vocab[i2] = row[1]
 		# else:
 		# 	print ("ERROR: Vocab not found!!\n", w1, str(vocab_dict.get(w1)), w2, str(vocab_dict.get(w2)))
+
 with open('concept_vocab.pkl', 'wb') as fid:
-	cPickle.dump(concept_vocab, fid)
-for k in map_dict.keys():
-	print (k.strip(), '  ', strip_w(map_dict[k]))
+	pickle.dump(concept_vocab, fid)
+
+for k, v in map_dict.items():
+	print (k.strip(), '  ', strip_w(v))
 # notfound = set()
 # with open('cs_preqs.csv', 'rb') as f:
 #	 reader = csv.reader(f, delimiter=',', quoting=csv.QUOTE_ALL)

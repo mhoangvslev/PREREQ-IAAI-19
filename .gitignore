@@ -8,3 +8,15 @@ siamese network/siamese_summary/test/
 siamese network/siamese_summary/train/
 
 siamese network/data_processing/__pycache__/
+
+datasets/YaleOCW Corpus/courses/
+
+datasets/YaleOCW Corpus/sessions/
+
+pairwise linked lda/
+
+datasets/YaleOCW Corpus/
+
+datasets/NPTEL MOOC Dataset/
+
+datasets/University Course Dataset/

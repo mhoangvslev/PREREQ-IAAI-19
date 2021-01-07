@@ -7,8 +7,7 @@ from sklearn.model_selection import train_test_split
 class WORD(object):
     def __init__(self, d, n, dataset='University Course Dataset', pn='', datapath='', test_perc=0.20):
         self.dim = d
-        self.w, self.ind_wtrain, self.vocab = self.load_data(
-        n, dataset, pn, datapath)
+        self.w, self.ind_wtrain, self.vocab = self.load_data(n, dataset, pn, datapath)
         # self.augment_data()
         self.n_train = len(self.y_train)
         self.n_test = len(self.y_test)
@@ -39,7 +38,7 @@ class WORD(object):
         preqs = []
         labels = []
         with open(path, 'r') as f:
-            for each in f:
+            for each in f.read().splitlines():
                 i, j, l = each.split(',')
                 i = int(i)
                 j = int(j)
@@ -77,10 +76,10 @@ class WORD(object):
             vec = np.exp(np.array(word_topic[i], dtype=np.float))
             if len(vec) > 0:
                 mx = np.max(vec)
-            if mx > 0:
-                word_topic[i] = vec/mx
-            # if mx != 0:
-            #	word_topic[i] = vec/mx
+                if mx > 0:
+                    word_topic[i] = vec/mx
+                # if mx != 0:
+                #	word_topic[i] = vec/mx
             word_topic[i] = vec
 
         return word_topic, n_w
@@ -149,9 +148,15 @@ class WORD(object):
             words, n_w = self.topics_per_word(word_inds, self.data_path)
             self.remove_outofbeta_words(n_w)
         else:
-            print(
-                "Unknown dataset. Mention path to beta file and vocab pickle. Exiting ...")
-            exit(0)
+            with open(f'../datasets/{dataset}/concept_vocab.pkl', 'rb') as fid:
+                vocab_ind_dict = pickle.load(fid)
+            all_concepts = set()
+            self.x_train, self.y_train, all_concepts = self.get_gt(
+                f'../datasets/{dataset}/train_test_5fold/train_'+str(n)+'_index.txt', all_concepts)
+            self.x_test, self.y_test, word_inds = self.get_gt(
+                f'../datasets/{dataset}/train_test_5fold/test_'+str(n)+'_index.txt', all_concepts)
+            self.data_path = datapath + str(pn)+'/final.beta'
+            words, n_w = self.topics_per_word(word_inds, self.data_path)
         self.data_path = datapath + str(pn)+'/final.beta'
         return words, all_concepts, vocab_ind_dict
 
@@ -176,6 +181,7 @@ class WORD(object):
         y_ = []
         cs_ = []
         ct_ = []
+
         if (one_shot and phase == "test"):
             for sn in range(self.n_test):
                 u, v = self.x_test[sn]
@@ -189,6 +195,7 @@ class WORD(object):
                 if phase == "train":
                     sn = int(np.random.uniform() * (self.n_train-1))
                     u, v = self.x_train[sn]
+
                     x1_.append(self.w[u])
                     x2_.append(self.w[v])
                     y_.append(self.y_train[sn])
@@ -203,9 +210,9 @@ class WORD(object):
                     cs_.append(u)
                     ct_.append(v)
 
-        x1_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x1_])
-        x2_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x2_])
+        x1_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x1_ ])
+        x2_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x2_ ])
         y_ = np.asarray(y_)
-        cs_ = np.asarray([self.vocab[i] for i in cs_])
-        ct_ = np.asarray([self.vocab[i] for i in ct_])
+        cs_ = np.asarray([self.vocab[i] for i in cs_ ])
+        ct_ = np.asarray([self.vocab[i] for i in ct_ ])
         return x1_, x2_, y_, cs_, ct_
