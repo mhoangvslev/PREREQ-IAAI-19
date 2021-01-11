@@ -60,7 +60,7 @@ with open('cs_preqs.csv', 'r') as f:
 		# 	print ("ERROR: Vocab not found!!\n", w1, str(vocab_dict.get(w1)), w2, str(vocab_dict.get(w2)))
 
 with open('concept_vocab.pkl', 'wb') as fid:
-	pickle.dump(concept_vocab, fid)
+	pickle.dump(concept_vocab, fid, protocol=2)
 
 for k, v in map_dict.items():
 	print (k.strip(), '  ', strip_w(v))

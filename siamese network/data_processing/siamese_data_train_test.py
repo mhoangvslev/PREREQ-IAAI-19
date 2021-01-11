@@ -60,10 +60,8 @@ class WORD(object):
         # return preqs, labels, all_concepts
 
     def topics_per_word(self, indices, beta_file):
-        word_topic = {}
-        for i in indices:
-            word_topic[i] = []
-
+        word_topic = dict([ (i, []) for i in indices ])
+        
         for topic in open(beta_file, 'r'):
             # print ('topic %03d' % topic_no)
             topic = list(map(float, topic.split()))
@@ -80,7 +78,8 @@ class WORD(object):
                     word_topic[i] = vec/mx
                 # if mx != 0:
                 #	word_topic[i] = vec/mx
-            word_topic[i] = vec
+                else:
+                    word_topic[i] = vec
 
         return word_topic, n_w
 
@@ -157,7 +156,8 @@ class WORD(object):
                 f'../datasets/{dataset}/train_test_5fold/test_'+str(n)+'_index.txt', all_concepts)
             self.data_path = datapath + str(pn)+'/final.beta'
             words, n_w = self.topics_per_word(word_inds, self.data_path)
-        self.data_path = datapath + str(pn)+'/final.beta'
+            self.remove_outofbeta_words(n_w)
+            
         return words, all_concepts, vocab_ind_dict
 
     def get_next_batch(self, batch, phase='train', one_shot=False):
@@ -210,9 +210,10 @@ class WORD(object):
                     cs_.append(u)
                     ct_.append(v)
 
-        x1_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x1_ ])
-        x2_ = np.asarray([x_.reshape((1, self.dim)) for x_ in x2_ ])
+        # Dilemma: either 0 or close to 0
+        x1_ = np.asarray([x_.reshape((1, self.dim)) if len(x_) > 0 else np.full((1, self.dim), 0) for x_ in x1_ ])
+        x2_ = np.asarray([x_.reshape((1, self.dim)) if len(x_) > 0 else np.full((1, self.dim), 0) for x_ in x2_ ])
         y_ = np.asarray(y_)
-        cs_ = np.asarray([self.vocab[i] for i in cs_ ])
-        ct_ = np.asarray([self.vocab[i] for i in ct_ ])
+        cs_ = np.asarray([self.vocab.get(i) for i in cs_ ])
+        ct_ = np.asarray([self.vocab.get(i) for i in ct_ ])
         return x1_, x2_, y_, cs_, ct_
