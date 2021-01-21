@@ -1,5 +1,6 @@
 import csv
 import pickle
+import re
 import nltk
 nltk.download("stopwords")
 
@@ -20,8 +21,8 @@ def strip_w(w):
 		return w.strip()
 
 def get_ind(w):
-	w1 = w.split('(')[0].lower().replace('_',' ').replace('-',' ').replace('/',' ')
-	#w1 = w.lower()
+	w1 = re.sub('[^a-zA-Z0-9 \n\.]', ' ', w).lower()
+	#w1 = w.split('(')[0].lower().replace('_',' ').replace('-',' ').replace('/',' ')
 	if vocab_dict_ori.get(w1) is not None:
 		map_dict[w] = w1
 		return vocab_dict_ori.get(w1)

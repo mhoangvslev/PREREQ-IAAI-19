@@ -7,23 +7,28 @@
 # <num words> is the number of words to print from each topic
 
 import sys
+from functools import cmp_to_key
+import pickle
+
+def cmp(a, b):
+	return (a > b) - (a < b)
 
 def print_topics(beta_file, vocab_file, nwords = 25):
 
 	# get the vocabulary
 
-	vocab = file(vocab_file, 'r').readlines()
+	vocab = open(vocab_file, 'r').readlines()
 	# vocab = map(lambda x: x.split()[0], vocab)
-	vocab = map(lambda x: x.strip(), vocab)
+	vocab = list(map(lambda x: x.strip(), vocab))
 
 	# for each line in the beta file
 
 	indices = range(len(vocab))
 	topic_no = 0
-	for topic in file(beta_file, 'r'):
+	for topic in open(beta_file, 'r'):
 		print ('topic %03d' % topic_no)
-		topic = map(float, topic.split())
-		indices.sort(lambda x,y: -cmp(topic[x], topic[y]))
+		topic = list(map(float, topic.split()))
+		sorted(indices, key=cmp_to_key(lambda x,y: -cmp(topic[x], topic[y])))
 		for i in range(nwords):
 			print ('   %s' % vocab[indices[i]])
 		topic_no = topic_no + 1
